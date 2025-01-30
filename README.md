@@ -1,10 +1,10 @@
-# Genetic Algorithm Project
+# Genetic Algorithm Optimization Framework
 
-This project implements a flexible and modular genetic algorithm framework for solving complex optimization problems. It features real-time visualization, configurable parameters, and multiple optimization functions.
+This project implements a flexible and modular genetic algorithm framework for solving complex optimization problems. It features multiple encoding schemes, real-time visualization, and configurable parameters through YAML configuration.
 
 ## Overview
 
-The project provides a comprehensive genetic algorithm implementation with customizable operators, real-time fitness visualization, and a selection of challenging optimization functions including Ackley, Rosenbrock, and Schwefel functions. All parameters are easily configurable through a YAML file, making it simple to experiment with different settings and problems.
+The framework provides a comprehensive genetic algorithm implementation with support for multiple encoding strategies (float, binary, and Gray binary), customizable operators, and real-time fitness visualization. It includes several challenging optimization functions like Ackley, Rosenbrock, and Schwefel functions. All parameters are easily configurable through a YAML file, making it simple to experiment with different settings and problems.
 
 ## Project Structure
 
@@ -14,7 +14,8 @@ genetic_algorithm/
 ├── main.py                 # Main execution script
 ├── ga/                    # Genetic Algorithm implementation
 │   ├── __init__.py
-│   └── genetic_algorithm.py
+│   ├── genetic_algorithm.py
+│   └── encoding.py        # Encoding schemes implementation
 ├── visualization/         # Visualization components
 │   ├── __init__.py
 │   └── visualizer.py
@@ -30,8 +31,8 @@ genetic_algorithm/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/..../ga_project_template.git
-cd genetic_algorithm
+git clone https://github.com/.../ga_project_template.git
+cd ga_project_template
 ```
 
 2. Install dependencies:
@@ -41,12 +42,23 @@ pip install -r requirements.txt
 
 ## Configuration
 
-The `config/parameters.yaml` file allows you to customize:
+The `config/parameters.yaml` file allows comprehensive customization of:
 
 - Genetic algorithm parameters (population size, generations, etc.)
+- Encoding settings (float, binary, or Gray binary encoding)
 - Operator selection (crossover, mutation, selection methods)
 - Optimization function choice
 - Visualization settings
+
+### Encoding Options
+
+The framework supports three encoding schemes:
+
+1. Float Encoding: Direct representation of real numbers, suitable for continuous optimization problems. Parameters include precision settings.
+
+2. Binary Encoding: Binary string representation of values, offering different genetic operator possibilities. Parameters include bits per variable.
+
+3. Gray Binary Encoding: Uses Gray code to ensure adjacent values differ by only one bit, potentially improving optimization performance.
 
 ## Usage
 
@@ -58,20 +70,46 @@ python main.py
 The program will:
 1. Load configuration from the YAML file
 2. Display problem and algorithm information
-3. Show real-time optimization progress
+3. Show real-time optimization progress with the chosen encoding
 4. Generate a visualization of the fitness evolution
 5. Save results and plots
 
 ## Features
 
-- Modular genetic algorithm implementation
-- Multiple selection methods (Tournament, Roulette, Rank)
-- Various crossover operators (One-point, Two-point, Uniform)
-- Different mutation types (Gaussian, Random Reset, Swap)
+### Core Components
+
+The genetic algorithm includes:
+- Modular implementation with pluggable components
+- Multiple encoding schemes for different problem types
+- Flexible operator selection
 - Real-time fitness visualization
 - Professional console output using Rich
 - YAML-based configuration
-- Three optimization test functions
+
+### Genetic Operators
+
+Selection Methods:
+- Tournament Selection
+- Roulette Wheel Selection
+- Rank-based Selection
+
+Crossover Operators:
+- Single-point Crossover
+- Two-point Crossover
+- Uniform Crossover
+
+Mutation Operators:
+- Gaussian Mutation (Float encoding)
+- Random Reset Mutation
+- Swap Mutation
+- Bit Flip Mutation (Binary encodings)
+
+### Test Functions
+
+The framework includes three challenging optimization functions:
+- Ackley Function: Multi-modal test function with many local minima
+- Rosenbrock Function: Valley-shaped function with global minimum inside a narrow parabolic valley
+- Schwefel Function: Deceptive function where the global minimum is far from the next best local minima
 
 ## Dependencies
 
@@ -82,4 +120,4 @@ The program will:
 
 ## License
 
-This project has been created by Nardone Emanuele
+This project was created by Nardone Emanuele
