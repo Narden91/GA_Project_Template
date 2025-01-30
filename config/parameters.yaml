@@ -8,20 +8,27 @@ genetic_algorithm:
   crossover_rate: 0.8
   elitism: true
 
+# Encoding Configuration
+encoding:
+  type: "float"            # Options: float, binary, gray_binary
+  parameters:
+    precision: 6           # For float encoding
+    bits_per_param: 16     # For binary and gray_binary encoding
+
 # Operator Selection
 operators:
   selection: "tournament"  # Options: tournament, roulette, rank
-  crossover: "two_point"  # Options: one_point, two_point, uniform
-  mutation: "gaussian"    # Options: gaussian, random_reset, swap
+  crossover: "two_point"   # Options: one_point, two_point, uniform
+  mutation: "gaussian"     # Options: gaussian, random_reset, swap, bit_flip
 
 # Optimization Problem
 optimization:
-  function: "ackley"      # Options: ackley, rosenbrock, schwefel
+  function: "ackley"       # Options: ackley, rosenbrock, schwefel
 
 # Visualization Parameters
 visualization:
-  plot_size: [12, 8]     # Width, Height in inches
-  update_interval: 0.01   # Seconds between updates
+  plot_size: [12, 8]       # Width, Height in inches
+  update_interval: 0.01    # Seconds between updates
   save_plot: true
   output_folder: "result"
   output_filename: "fitness_evolution.png"

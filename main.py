@@ -14,8 +14,10 @@ import numpy as np
 import yaml
 import time
 
+
 # Initialize Rich console
 console = Console()
+
 
 def load_config(config_path: str = "config/parameters.yaml") -> dict:
     """Load configuration from YAML file"""

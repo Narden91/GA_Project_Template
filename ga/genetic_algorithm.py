@@ -1,25 +1,28 @@
 import numpy as np
 from typing import Callable, List, Tuple, Optional
 from enum import Enum
-
+from .encoding import Encoding, FloatEncoding, BinaryEncoding, GrayBinaryEncoding
 
 class SelectionType(Enum):
     TOURNAMENT = "tournament"
     ROULETTE = "roulette"
     RANK = "rank"
 
-
 class CrossoverType(Enum):
     ONE_POINT = "one_point"
     TWO_POINT = "two_point"
     UNIFORM = "uniform"
 
-
 class MutationType(Enum):
     GAUSSIAN = "gaussian"
     RANDOM_RESET = "random_reset"
     SWAP = "swap"
+    BIT_FLIP = "bit_flip"
 
+class EncodingType(Enum):
+    FLOAT = "float"
+    BINARY = "binary"
+    GRAY_BINARY = "gray_binary"
 
 class GeneticAlgorithm:
     def __init__(
@@ -28,6 +31,8 @@ class GeneticAlgorithm:
         pop_size: int,
         chromosome_length: int,
         gene_bounds: Tuple[float, float],
+        encoding_type: EncodingType = EncodingType.FLOAT,
+        encoding_params: dict = None,
         selection_type: SelectionType = SelectionType.TOURNAMENT,
         crossover_type: CrossoverType = CrossoverType.TWO_POINT,
         mutation_type: MutationType = MutationType.GAUSSIAN,
@@ -48,24 +53,53 @@ class GeneticAlgorithm:
         self.crossover_rate = crossover_rate
         self.elitism = elitism
         
+        # Set up encoding
+        self._setup_encoding(encoding_type, encoding_params or {})
+        
         # Initialize population
         self.population = self._initialize_population()
         self.fitness_scores = np.zeros(pop_size)
         self.best_fitness_history = []
         self.avg_fitness_history = []
         
+    def _setup_encoding(self, encoding_type: EncodingType, params: dict):
+        """Initialize the appropriate encoding scheme"""
+        if encoding_type == EncodingType.FLOAT:
+            self.encoding = FloatEncoding(
+                precision=params.get('precision', 6)
+            )
+        elif encoding_type == EncodingType.BINARY:
+            self.encoding = BinaryEncoding(
+                bits_per_param=params.get('bits_per_param', 16)
+            )
+        elif encoding_type == EncodingType.GRAY_BINARY:
+            self.encoding = GrayBinaryEncoding(
+                bits_per_param=params.get('bits_per_param', 16)
+            )
+    
     def _initialize_population(self) -> np.ndarray:
-        """Initialize random population within gene bounds"""
-        return np.random.uniform(
-            self.gene_bounds[0],
-            self.gene_bounds[1],
-            (self.pop_size, self.chromosome_length)
+        """Initialize population using the selected encoding"""
+        return self.encoding.initialize_population(
+            self.pop_size,
+            self.chromosome_length,
+            self.gene_bounds
         )
     
     def _evaluate_population(self) -> None:
         """Evaluate fitness for entire population"""
         for i in range(self.pop_size):
-            self.fitness_scores[i] = self.fitness_func(self.population[i])
+            # Decode chromosome before fitness evaluation
+            phenotype = self.encoding.decode(self.population[i])
+            # Scale phenotype to bounds if using binary encoding
+            if isinstance(self.encoding, (BinaryEncoding, GrayBinaryEncoding)):
+                phenotype = phenotype * (self.gene_bounds[1] - self.gene_bounds[0]) + self.gene_bounds[0]
+            self.fitness_scores[i] = self.fitness_func(phenotype)
+
+    def _mutation_bit_flip(self, chromosome: np.ndarray) -> np.ndarray:
+        """Bit flip mutation for binary encodings"""
+        mask = np.random.random(len(chromosome)) < self.mutation_rate
+        chromosome[mask] = 1 - chromosome[mask]
+        return chromosome
     
     def _selection_tournament(self) -> np.ndarray:
         """Tournament selection"""
@@ -198,12 +232,18 @@ class GeneticAlgorithm:
         
         # Mutation
         for i in range(self.pop_size):
-            if self.mutation_type == MutationType.GAUSSIAN:
-                new_population[i] = self._mutation_gaussian(new_population[i])
-            elif self.mutation_type == MutationType.RANDOM_RESET:
-                new_population[i] = self._mutation_random_reset(new_population[i])
+            if isinstance(self.encoding, (BinaryEncoding, GrayBinaryEncoding)):
+                if self.mutation_type == MutationType.BIT_FLIP:
+                    new_population[i] = self._mutation_bit_flip(new_population[i])
+                else:
+                    new_population[i] = self._mutation_random_reset(new_population[i])
             else:
-                new_population[i] = self._mutation_swap(new_population[i])
+                if self.mutation_type == MutationType.GAUSSIAN:
+                    new_population[i] = self._mutation_gaussian(new_population[i])
+                elif self.mutation_type == MutationType.RANDOM_RESET:
+                    new_population[i] = self._mutation_random_reset(new_population[i])
+                else:
+                    new_population[i] = self._mutation_swap(new_population[i])
         
         # Elitism: preserve best individual
         if self.elitism:
