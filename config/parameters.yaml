@@ -30,5 +30,5 @@ visualization:
   plot_size: [12, 8]       # Width, Height in inches
   update_interval: 0.01    # Seconds between updates
   save_plot: true
-  output_folder: "result"
+  output_folder: "results"
   output_filename: "fitness_evolution.png"
