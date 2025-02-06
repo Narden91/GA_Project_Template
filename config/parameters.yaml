@@ -2,11 +2,12 @@
 genetic_algorithm:
   population_size: 100
   chromosome_length: 10
-  max_generations: 100
+  max_generations: 20
   tournament_size: 3
   mutation_rate: 0.01
   crossover_rate: 0.8
   elitism: true
+  runs: 2  # Number of runs
 
 # Encoding Configuration
 encoding:
@@ -32,3 +33,4 @@ visualization:
   save_plot: true
   output_folder: "results"
   output_filename: "fitness_evolution.png"
+  show_plot: false          # Whether to show the plot or not

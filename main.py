@@ -62,6 +62,7 @@ def print_ga_config(ga: GeneticAlgorithm, config: dict) -> None:
     
     console.print(table)
 
+
 def main():
     # Load configuration
     config = load_config()
@@ -98,9 +99,6 @@ def main():
     # Print GA configuration
     print_ga_config(ga, config)
     
-    # Initialize visualizer
-    visualizer = FitnessVisualizer(config['genetic_algorithm']['max_generations'])
-    
     # Setup progress bar
     with Progress(
         SpinnerColumn(),
@@ -119,50 +117,60 @@ def main():
         best_overall_fitness = float('-inf')
         best_solution = None
         
-        for generation in range(config['genetic_algorithm']['max_generations']):
-            # Perform one generation of evolution
-            best_fitness, avg_fitness = ga.evolve()
+        for run in range(config['genetic_algorithm']['runs']):
+            console.print(f"\n[bold blue]Run {run + 1}/{config['genetic_algorithm']['runs']}[/bold blue]")
             
-            # Update best solution if necessary
-            if best_fitness > best_overall_fitness:
-                best_overall_fitness = best_fitness
-                best_idx = np.argmax(ga.fitness_scores)
-                best_solution = ga.population[best_idx].copy()
+            # Initialize visualizer for each run
+            visualizer = FitnessVisualizer(config['genetic_algorithm']['max_generations'])
             
-            # Update visualization
-            visualizer.update(generation, best_fitness, avg_fitness)
+            for generation in range(config['genetic_algorithm']['max_generations']):
+                # Perform one generation of evolution
+                best_fitness, avg_fitness = ga.evolve()
+                
+                # Update best solution if necessary
+                if best_fitness > best_overall_fitness:
+                    best_overall_fitness = best_fitness
+                    best_idx = np.argmax(ga.fitness_scores)
+                    best_solution = ga.population[best_idx].copy()
+                
+                # Update visualization if show_plot or save_plot is enabled
+                if config['visualization']['show_plot'] or config['visualization']['save_plot']:
+                    visualizer.update(generation, best_fitness, avg_fitness)
+                
+                # Update progress
+                progress.update(evolution_task, advance=1)
+                
+                # Print current best fitness
+                console.print(f"Generation {generation}: Best Fitness = {best_fitness:.4f}", end="\r")
+                
+                # Small delay for visualization
+                time.sleep(config['visualization']['update_interval'])
             
-            # Update progress
-            progress.update(evolution_task, advance=1)
-            
-            # Print current best fitness
-            console.print(f"Generation {generation}: Best Fitness = {best_fitness:.4f}", end="\r")
-            
-            # Small delay for visualization
-            time.sleep(config['visualization']['update_interval'])
-    
-    # Print final results
-    console.print("\n\n[bold green]Optimization Complete![/bold green]")
-    
-    results_table = Table(title="Final Results", show_header=True, header_style="bold magenta")
-    results_table.add_column("Metric", style="cyan")
-    results_table.add_column("Value", style="green")
-    
-    results_table.add_row("Best Fitness", f"{best_overall_fitness:.6f}")
-    results_table.add_row("Best Solution", str(best_solution))
-    results_table.add_row("Distance from Optimum", f"{abs(best_overall_fitness - problem.optimal_value):.6f}")
-    
-    console.print(results_table)
-    
-    if config['visualization']['save_plot']:
+            # Save plot for the current run if save_plot is enabled
+            if config['visualization']['save_plot']:
+                if not os.path.exists(config['visualization']['output_folder']):
+                    os.makedirs(config['visualization']['output_folder'])
+                
+                fitness_filename = os.path.join(
+                    config['visualization']['output_folder'], 
+                    f"{config['visualization']['output_filename'].split('.')[0]}_run_{run + 1}.png"
+                )
+                
+                visualizer.save(fitness_filename)
+                console.print(f"\n[italic]Fitness evolution plot for run {run + 1} saved as '{fitness_filename}'[/italic]")
         
-        if not os.path.exists(config['visualization']['output_folder']):
-            os.makedirs(config['visualization']['output_folder'])
+        # Print final results
+        console.print("\n\n[bold green]Optimization Complete![/bold green]")
         
-        fitness_filename = os.path.join(config['visualization']['output_folder'], config['visualization']['output_filename'])
+        results_table = Table(title="Final Results", show_header=True, header_style="bold magenta")
+        results_table.add_column("Metric", style="cyan")
+        results_table.add_column("Value", style="green")
         
-        visualizer.save(fitness_filename)
-        console.print(f"\n[italic]Fitness evolution plot saved as '{config['visualization']['output_filename']}'[/italic]")
+        results_table.add_row("Best Fitness", f"{best_overall_fitness:.6f}")
+        results_table.add_row("Best Solution", str(best_solution))
+        results_table.add_row("Distance from Optimum", f"{abs(best_overall_fitness - problem.optimal_value):.6f}")
+        
+        console.print(results_table)
 
 
 if __name__ == "__main__":
