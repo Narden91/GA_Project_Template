@@ -1,3 +1,6 @@
+settings:
+  verbose: false
+
 # Genetic Algorithm Parameters
 genetic_algorithm:
   population_size: 100

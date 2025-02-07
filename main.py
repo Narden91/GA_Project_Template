@@ -3,6 +3,7 @@ import sys
 
 sys.dont_write_bytecode = True
 
+from ga.evolution_logger import EvolutionLogger
 from ga import GeneticAlgorithm, SelectionType, CrossoverType, MutationType
 from visualization import FitnessVisualizer
 from data_handler import OptimizationProblem, OptimizationFunction
@@ -81,24 +82,6 @@ def main():
     # Print problem information
     print_problem_info(problem)
     
-    # Initialize GA with configuration
-    ga = GeneticAlgorithm(
-        fitness_func=problem.evaluate,
-        pop_size=config['genetic_algorithm']['population_size'],
-        chromosome_length=config['genetic_algorithm']['chromosome_length'],
-        gene_bounds=problem.bounds,
-        selection_type=SelectionType(config['operators']['selection']),
-        crossover_type=CrossoverType(config['operators']['crossover']),
-        mutation_type=MutationType(config['operators']['mutation']),
-        tournament_size=config['genetic_algorithm']['tournament_size'],
-        mutation_rate=config['genetic_algorithm']['mutation_rate'],
-        crossover_rate=config['genetic_algorithm']['crossover_rate'],
-        elitism=config['genetic_algorithm']['elitism']
-    )
-    
-    # Print GA configuration
-    print_ga_config(ga, config)
-    
     # Setup progress bar
     with Progress(
         SpinnerColumn(),
@@ -113,42 +96,69 @@ def main():
             total=config['genetic_algorithm']['max_generations']
         )
         
-        # Evolution loop
-        best_overall_fitness = float('-inf')
-        best_solution = None
-        visualizer = None
+        # Initialize evolution logger
+        logger = EvolutionLogger()
         
+                # Track best fitness across all runs
+        best_fitness_overall = float('-inf')
+        best_solution_overall = None
+
         for run in range(config['genetic_algorithm']['runs']):
             console.print(f"\n[bold blue]Run {run + 1}/{config['genetic_algorithm']['runs']}[/bold blue]")
-            
+
+            ga = GeneticAlgorithm(
+                fitness_func=problem.evaluate,
+                pop_size=config['genetic_algorithm']['population_size'],
+                chromosome_length=config['genetic_algorithm']['chromosome_length'],
+                gene_bounds=problem.bounds,
+                selection_type=SelectionType(config['operators']['selection']),
+                crossover_type=CrossoverType(config['operators']['crossover']),
+                mutation_type=MutationType(config['operators']['mutation']),
+                tournament_size=config['genetic_algorithm']['tournament_size'],
+                mutation_rate=config['genetic_algorithm']['mutation_rate'],
+                crossover_rate=config['genetic_algorithm']['crossover_rate'],
+                elitism=config['genetic_algorithm']['elitism']
+            )
+
+            # Print GA configuration for first run if verbose
+            if run == 0 and config['settings']['verbose']:
+                print_ga_config(ga, config)
+
+            # Initialize best fitness for the current run
+            best_solution = None
+            best_overall_fitness = float('-inf')
+
             # Initialize visualizer for each run
+            visualizer = None
             if config['visualization']['show_plot'] or config['visualization']['save_plot']:
                 visualizer = FitnessVisualizer(config['genetic_algorithm']['max_generations'], show_plot=config['visualization']['show_plot'])
-            
+
             for generation in range(config['genetic_algorithm']['max_generations']):
                 # Perform one generation of evolution
-                best_fitness, avg_fitness = ga.evolve()
-                
-                # Update best solution if necessary
+                best_fitness, avg_fitness = ga.evolve(run, logger)
+
+                # Track best solution and fitness for the current run
                 if best_fitness > best_overall_fitness:
                     best_overall_fitness = best_fitness
                     best_idx = np.argmax(ga.fitness_scores)
                     best_solution = ga.population[best_idx].copy()
-                
-                # Update visualization if show_plot or save_plot is enabled
+
+                # Update visualization if enabled
                 if config['visualization']['show_plot'] or config['visualization']['save_plot']:
                     visualizer.update(generation, best_fitness, avg_fitness)
-                
+
                 # Update progress
                 progress.update(evolution_task, advance=1)
-                
-                # Print current best fitness
                 console.print(f"Generation {generation}: Best Fitness = {best_fitness:.4f}", end="\r")
-                
-                # Small delay for visualization
+
                 time.sleep(config['visualization']['update_interval'])
-            
-            # Save plot for the current run if save_plot is enabled
+
+            # Check if this run produced the best fitness overall
+            if best_overall_fitness > best_fitness_overall:
+                best_fitness_overall = best_overall_fitness
+                best_solution_overall = best_solution
+
+            # Save fitness plot if enabled
             if config['visualization']['save_plot']:
                 if not os.path.exists(config['visualization']['output_folder']):
                     os.makedirs(config['visualization']['output_folder'])
@@ -157,21 +167,24 @@ def main():
                     config['visualization']['output_folder'], 
                     f"{config['visualization']['output_filename'].split('.')[0]}_run_{run + 1}.png"
                 )
-                
+
                 visualizer.save(fitness_filename)
-                console.print(f"\n[italic]Fitness evolution plot for run {run + 1} saved as '{fitness_filename}'[/italic]")
-        
+                console.print(f"\n[italic]Fitness evolution plot for run {run + 1} saved as '{fitness_filename}'[/italic]") if config['settings']['verbose'] else None
+
+        # Save evolution data to CSV
+        logger.save()
+
         # Print final results
         console.print("\n\n[bold green]Optimization Complete![/bold green]")
-        
+
         results_table = Table(title="Final Results", show_header=True, header_style="bold magenta")
         results_table.add_column("Metric", style="cyan")
         results_table.add_column("Value", style="green")
-        
-        results_table.add_row("Best Fitness", f"{best_overall_fitness:.6f}")
-        results_table.add_row("Best Solution", str(best_solution))
-        results_table.add_row("Distance from Optimum", f"{abs(best_overall_fitness - problem.optimal_value):.6f}")
-        
+
+        results_table.add_row("Best Fitness (Overall)", f"{best_fitness_overall:.6f}")
+        results_table.add_row("Best Solution (Overall)", str(best_solution_overall))
+        results_table.add_row("Distance from Optimum", f"{abs(best_fitness_overall - problem.optimal_value):.6f}")
+
         console.print(results_table)
 
 

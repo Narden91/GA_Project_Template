@@ -192,17 +192,20 @@ class GeneticAlgorithm:
             chromosome[idx1], chromosome[idx2] = chromosome[idx2], chromosome[idx1]
         return chromosome
     
-    def evolve(self) -> Tuple[float, float]:
-        """Perform one generation of evolution"""
-        # Evaluate population
+    def evolve(self, run, logger=None):
+        """Perform one generation of evolution."""
         self._evaluate_population()
-        
-        # Store statistics
+
+        # Store fitness statistics
         best_fitness = np.max(self.fitness_scores)
         avg_fitness = np.mean(self.fitness_scores)
         self.best_fitness_history.append(best_fitness)
         self.avg_fitness_history.append(avg_fitness)
-        
+
+        # Log the data if a logger is provided
+        if logger:
+            logger.log_generation(run, len(self.best_fitness_history) - 1, avg_fitness, best_fitness)
+
         # Selection
         if self.selection_type == SelectionType.TOURNAMENT:
             selected = self._selection_tournament()
@@ -210,7 +213,7 @@ class GeneticAlgorithm:
             selected = self._selection_roulette()
         else:
             selected = self._selection_rank()
-        
+
         # Create new population through crossover
         new_population = np.zeros_like(self.population)
         for i in range(0, self.pop_size, 2):
@@ -229,7 +232,7 @@ class GeneticAlgorithm:
                     )
             else:
                 new_population[i] = selected[i]
-        
+
         # Mutation
         for i in range(self.pop_size):
             if isinstance(self.encoding, (BinaryEncoding, GrayBinaryEncoding)):
@@ -244,12 +247,12 @@ class GeneticAlgorithm:
                     new_population[i] = self._mutation_random_reset(new_population[i])
                 else:
                     new_population[i] = self._mutation_swap(new_population[i])
-        
+
         # Elitism: preserve best individual
         if self.elitism:
             best_idx = np.argmax(self.fitness_scores)
             worst_idx = np.argmin(self.fitness_scores)
             new_population[worst_idx] = self.population[best_idx]
-        
+
         self.population = new_population
         return best_fitness, avg_fitness
