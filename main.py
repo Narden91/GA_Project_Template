@@ -116,12 +116,14 @@ def main():
         # Evolution loop
         best_overall_fitness = float('-inf')
         best_solution = None
+        visualizer = None
         
         for run in range(config['genetic_algorithm']['runs']):
             console.print(f"\n[bold blue]Run {run + 1}/{config['genetic_algorithm']['runs']}[/bold blue]")
             
             # Initialize visualizer for each run
-            visualizer = FitnessVisualizer(config['genetic_algorithm']['max_generations'])
+            if config['visualization']['show_plot'] or config['visualization']['save_plot']:
+                visualizer = FitnessVisualizer(config['genetic_algorithm']['max_generations'], show_plot=config['visualization']['show_plot'])
             
             for generation in range(config['genetic_algorithm']['max_generations']):
                 # Perform one generation of evolution
