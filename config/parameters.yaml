@@ -12,6 +12,12 @@ genetic_algorithm:
   elitism: true
   runs: 2  # Number of runs
 
+data:
+  test_size: 0.2
+  random_state: 42
+  use_feature_selection: true
+  num_selected_features: 10
+
 # Encoding Configuration
 encoding:
   type: "float"            # Options: float, binary, gray_binary
@@ -36,4 +42,4 @@ visualization:
   save_plot: true
   output_folder: "results"
   output_filename: "fitness_evolution.png"
-  show_plot: false          # Whether to show the plot or not
+  show_plot: true          # Whether to show the plot or not
