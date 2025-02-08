@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from ga.genetic_algorithm import GeneticAlgorithm, EncodingType, SelectionType, CrossoverType, MutationType
 from sklearn.ensemble import RandomForestClassifier

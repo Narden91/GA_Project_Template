@@ -3,9 +3,9 @@ settings:
 
 # Genetic Algorithm Parameters
 genetic_algorithm:
-  population_size: 100
+  population_size: 10
   chromosome_length: 10
-  max_generations: 100
+  max_generations: 10
   tournament_size: 3
   mutation_rate: 0.01
   crossover_rate: 0.8

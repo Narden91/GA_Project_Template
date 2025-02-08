@@ -57,7 +57,7 @@ def main():
 
         # Check if feature selection is enabled
         if config["data"].get("use_feature_selection", False):
-            console.print("[bold cyan]Feature Selection GA Enabled[/bold cyan]")
+            console.print("[bold cyan]Feature Selection GA Enabled[/bold cyan]") if run == 0 and config["settings"]["verbose"] else None
             best_solution_overall = None
             
             path = Path(config["data"]["folder"]) / Path(config["data"]["filename"])
@@ -84,7 +84,7 @@ def main():
             )
 
             # Print problem information
-            print_problem_info(problem)
+            print_problem_info(problem) if run == 0 and config['settings']['verbose'] else None
 
             ga = GeneticAlgorithm(
                 fitness_func=problem.evaluate,

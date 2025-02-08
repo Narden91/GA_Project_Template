@@ -25,4 +25,3 @@ class EvolutionLogger:
         df = pd.DataFrame(self.data)
         output_path = os.path.join(self.output_dir, self.filename)
         df.to_csv(output_path, index=False)
-        print(f"Evolution data saved to {output_path}")
