@@ -175,13 +175,16 @@ class GeneticAlgorithm:
         chromosome[mask] += mutation[mask]
         return np.clip(chromosome, self.gene_bounds[0], self.gene_bounds[1])
     
-    def _mutation_random_reset(self, chromosome: np.ndarray) -> np.ndarray:
-        """Random reset mutation"""
-        mask = np.random.random(self.chromosome_length) < self.mutation_rate
+    def _mutation_random_reset(self, chromosome):
+        """Performs random reset mutation on a chromosome."""
+        chromosome = np.array(chromosome)  # Ensure array type
+        mask = np.random.rand(chromosome.shape[0]) < self.mutation_rate
+
+        if mask.shape[0] != chromosome.shape[0]:
+            raise ValueError(f"Mismatch in mutation: chromosome size {chromosome.shape[0]}, mask size {mask.shape[0]}")
+
         chromosome[mask] = np.random.uniform(
-            self.gene_bounds[0],
-            self.gene_bounds[1],
-            np.sum(mask)
+            self.gene_bounds[0], self.gene_bounds[1], size=np.sum(mask)
         )
         return chromosome
     
