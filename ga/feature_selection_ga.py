@@ -9,15 +9,17 @@ console = Console()
 
 class FeatureSelectionGA(GeneticAlgorithm):
     def __init__(self, X_train, y_train, model=None, pop_size=50, mutation_rate=0.1, 
-                 crossover_rate=0.8, elitism=True, verbose=False):
+                 crossover_rate=0.8, elitism=True, seed=42, verbose=False):
         """Initialize GA for feature selection."""
         self.X_train = X_train
         self.y_train = y_train
         self.num_features = X_train.shape[1]
+        self.verbose = verbose
+        self.seed = seed
         
         # Default classifier if none is provided
-        self.model = model if model else DecisionTreeClassifier()
-
+        self.model = model if model else DecisionTreeClassifier(random_state=seed)
+        
         super().__init__(
             fitness_func=self.evaluate_fitness,
             pop_size=pop_size,
@@ -32,7 +34,7 @@ class FeatureSelectionGA(GeneticAlgorithm):
             elitism=elitism
         )
 
-        if verbose:
+        if self.verbose:
             console.print(Panel.fit(
                 f"[bold cyan]Feature Selection GA Initialized[/bold cyan]\n"
                 f"Population Size: {pop_size}\n"
@@ -42,8 +44,8 @@ class FeatureSelectionGA(GeneticAlgorithm):
                 f"Number of Features: {self.num_features}"
             ))
 
-    def initialize_population(self) -> np.ndarray:
-        """Initialize population ensuring binary feature selection (0/1)."""
+    def _initialize_population(self) -> np.ndarray:
+        """Override GeneticAlgorithm's population initialization to ensure correct shape."""
         population = np.random.randint(2, size=(self.pop_size, self.num_features))
         
         # Ensure at least one feature is selected per chromosome
@@ -51,10 +53,6 @@ class FeatureSelectionGA(GeneticAlgorithm):
             if np.sum(population[i]) == 0:
                 population[i, np.random.randint(0, self.num_features)] = 1
         
-        if self.verbose:
-            console.print(f"[bold green]Initialized Population Sample (First 5 Chromosomes):[/bold green]")
-            console.print(population[:5])
-
         return population
 
     def _mutation_bit_flip(self, chromosome: np.ndarray) -> np.ndarray:

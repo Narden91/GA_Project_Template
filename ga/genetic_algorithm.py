@@ -41,6 +41,7 @@ class GeneticAlgorithm:
         crossover_rate: float = 0.8,
         elitism: bool = True
     ):
+        
         self.fitness_func = fitness_func
         self.pop_size = pop_size
         self.chromosome_length = chromosome_length
@@ -52,7 +53,7 @@ class GeneticAlgorithm:
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
         self.elitism = elitism
-        
+    
         # Set up encoding
         self._setup_encoding(encoding_type, encoding_params or {})
         
@@ -197,6 +198,7 @@ class GeneticAlgorithm:
     
     def evolve(self, run, logger=None):
         """Perform one generation of evolution."""
+        print(f"[DEBUG] Before Evolution: Population Shape = {self.population.shape}")
         self._evaluate_population()
 
         # Store fitness statistics
@@ -251,6 +253,7 @@ class GeneticAlgorithm:
                 else:
                     new_population[i] = self._mutation_swap(new_population[i])
 
+        print(f"[DEBUG] New Population Shape = {new_population.shape}")
         # Elitism: preserve best individual
         if self.elitism:
             best_idx = np.argmax(self.fitness_scores)
@@ -258,4 +261,7 @@ class GeneticAlgorithm:
             new_population[worst_idx] = self.population[best_idx]
 
         self.population = new_population
+        
+        print(f"[DEBUG] After Evolution: Population Shape = {self.population.shape}")
+            
         return best_fitness, avg_fitness

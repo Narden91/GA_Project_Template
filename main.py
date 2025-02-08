@@ -3,6 +3,8 @@ import random
 import sys
 from pathlib import Path
 
+from sklearn.tree import DecisionTreeClassifier
+
 sys.dont_write_bytecode = True
 
 from ga.feature_selection_ga import FeatureSelectionGA
@@ -18,7 +20,7 @@ from rich.panel import Panel
 from rich.table import Table
 import numpy as np
 import time
-
+from sklearn.ensemble import RandomForestClassifier  # Import for test evaluation
 
 # Initialize Rich console
 console = Console()
@@ -74,7 +76,7 @@ def main():
                 elitism = config["genetic_algorithm"]["elitism"],
                 verbose=config["settings"]["verbose"],
             )
-                    
+            
         else:
             # Initialize standard GA
             problem = OptimizationProblem(
@@ -167,14 +169,34 @@ def main():
     # Save evolution data to CSV
     logger.save()
 
+    # ---- ✅ Evaluate Best Feature Set on Test Set ✅ ----
+    if config["data"].get("use_feature_selection", False):
+        best_chromosome = best_solution_overall
+        best_chromosome = np.round(best_chromosome).astype(int)
+        
+        console.print(f"[bold cyan]Best Chromosome Shape: {best_chromosome.shape}[/bold cyan]") if config["settings"]["verbose"] else None
+        selected_features = np.where(best_chromosome == 1)[0]
+
+        console.print("\n[bold green]Final Selected Features:[/bold green]", selected_features) if config["settings"]["verbose"] else None
+
+        if len(selected_features) == 0:
+            console.print("[bold red]Warning: No features selected! Model cannot be evaluated.[/bold red]") if config["settings"]["verbose"] else None
+        else:
+            X_train_selected = X_train[:, selected_features]
+            X_test_selected = X_test[:, selected_features]
+
+            final_model = DecisionTreeClassifier()
+            final_model.fit(X_train_selected, y_train)
+            test_accuracy = final_model.score(X_test_selected, y_test)
+
+            console.print(f"\n[bold cyan]Final Test Accuracy: {test_accuracy:.4f}[/bold cyan]") if config["settings"]["verbose"] else None
+
     # Print final results
     console.print("\n\n[bold green]Optimization Complete![/bold green]")
 
     results_table = Table(title="Final Results", show_header=True, header_style="bold magenta")
     results_table.add_column("Metric", style="cyan")
     results_table.add_column("Value", style="green")
-
-    results_table.add_row("Best Fitness (Overall)", f"{best_fitness_overall:.6f}")
     
     if config["data"].get("use_feature_selection", False):
         results_table.add_row("Best Fitness (Overall)", f"{best_fitness_overall:.6f}")

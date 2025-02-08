@@ -72,6 +72,7 @@ class BinaryEncoding(Encoding):
     
     def initialize_population(self, pop_size: int, chromosome_length: int, bounds: Tuple[float, float]) -> np.ndarray:
         """Initialize population with binary values"""
+        print(f"[DEBUG] BinaryEncoding: Pop Size = {pop_size}, Chromosome Length = {chromosome_length}")
         total_bits = chromosome_length * self.bits_per_param
         return np.random.randint(2, size=(pop_size, total_bits))
 
