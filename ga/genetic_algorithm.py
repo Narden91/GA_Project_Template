@@ -198,7 +198,6 @@ class GeneticAlgorithm:
     
     def evolve(self, run, logger=None):
         """Perform one generation of evolution."""
-        print(f"[DEBUG] Before Evolution: Population Shape = {self.population.shape}")
         self._evaluate_population()
 
         # Store fitness statistics
@@ -253,7 +252,6 @@ class GeneticAlgorithm:
                 else:
                     new_population[i] = self._mutation_swap(new_population[i])
 
-        print(f"[DEBUG] New Population Shape = {new_population.shape}")
         # Elitism: preserve best individual
         if self.elitism:
             best_idx = np.argmax(self.fitness_scores)
@@ -262,6 +260,5 @@ class GeneticAlgorithm:
 
         self.population = new_population
         
-        print(f"[DEBUG] After Evolution: Population Shape = {self.population.shape}")
             
         return best_fitness, avg_fitness
