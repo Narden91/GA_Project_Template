@@ -34,8 +34,8 @@ genetic_algorithm/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/.../ga_project_template.git
-cd ga_project_template
+git clone https://github.com/.../GA_Project_Template.git
+cd GA_Project_Template
 ```
 
 2. Install dependencies:
