@@ -1,4 +1,7 @@
 numpy
 matplotlib
 rich
-pyyaml
+PyYAML
+scikit-learn
+pandas
+seaborn

@@ -34,7 +34,7 @@ genetic_algorithm/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/.../GA_Project_Template.git
+git clone https://github.com/Narden91/GA_Project_Template.git
 cd GA_Project_Template
 ```
 
@@ -79,7 +79,7 @@ The program will:
 
 ### Running Feature Selection Genetic Algorithm
 
-To enable feature selection, set `use_feature_selection: true` in `parameters.yaml`. The framework will:
+To enable feature selection task, set `use_feature_selection: true` in `parameters.yaml`. The framework will:
 1. Load the dataset specified in the configuration.
 2. Initialize a Genetic Algorithm where each chromosome represents a feature subset.
 3. Optimize the selection of relevant features to maximize classification accuracy.
