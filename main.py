@@ -75,6 +75,7 @@ def main():
                 crossover_rate = config["genetic_algorithm"]["crossover_rate"],
                 elitism = config["genetic_algorithm"]["elitism"],
                 verbose=config["settings"]["verbose"],
+                fitness_type=config["genetic_algorithm"]["fitness_type"]
             )
             
         else:

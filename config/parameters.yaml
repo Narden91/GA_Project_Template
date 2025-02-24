@@ -11,13 +11,14 @@ genetic_algorithm:
   crossover_rate: 0.8
   elitism: true
   runs: 1  # Number of runs
+  fitness_type: "filter" # wrapper
 
 data:
   folder: data
   filename: ozone.csv
   test_size: 0.2
   random_state: 42
-  use_feature_selection: false
+  use_feature_selection: true
 
 # Encoding Configuration
 encoding:
